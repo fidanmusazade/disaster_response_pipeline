@@ -23,7 +23,6 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import MultiLabelBinarizer
-from xgboost import XGBClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class VerbCounter(BaseEstimator, TransformerMixin):
@@ -111,18 +110,19 @@ def build_model():
             ])),
             ('verbcount', VerbCounter())
         ])),
-        ('clf', MultiOutputClassifier(XGBClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
     
-#     parameters = {
-# #         'vect__ngram_range': [(1,2), (2,2)],
-#         'features__nlp__tfidf__smooth_idf': [True, False],
-#         'clf__estimator__n_estimators': [100, 200]
-#     }
+    parameters = {
+#         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
+        'features__nlp__tfidf__smooth_idf': [True, False],
+        'clf__estimator__n_estimators': [100, 200],
+        'clf__estimator__criterion': ['entropy']
+    }
 
-#     cv = GridSearchCV(pipeline, parameters)
+    cv = GridSearchCV(pipeline, parameters)
 
-    return pipeline
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -144,9 +144,11 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
     m = MultiLabelBinarizer().fit(y_true)
 
-    f1_score(m.transform(y_true),
+    f1 = f1_score(m.transform(y_true),
              m.transform(y_pred),
              average='weighted')
+    print("overall f1 score: ", f1)
+    
     Y_pred = model.predict(X_test)
     for col in category_names:
         print(col)
