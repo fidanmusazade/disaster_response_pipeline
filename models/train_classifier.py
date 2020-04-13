@@ -21,6 +21,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import MultiLabelBinarizer
+from xgboost import XGBClassifier
 
 
 def load_data(database_filepath):
@@ -81,14 +82,12 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('clf', MultiOutputClassifier(XGBCClassifier()))
     ])
     
     parameters = {
         'vect__ngram_range': [(1,2), (2,2)],
         'tfidf__smooth_idf': [True, False],
-        'clf__estimator__max_depth': [3, 9, 12],
-        'clf__estimator__min_samples_split': [2, 4, 8],
         'clf__estimator__n_estimators': [50, 100, 200]
     }
 
