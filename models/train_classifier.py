@@ -1,3 +1,5 @@
+import nltk
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'stopwords'])
 import sys
 import pandas as pd
 import numpy as np
@@ -13,7 +15,7 @@ from nltk.stem.porter import PorterStemmer
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -22,6 +24,24 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import MultiLabelBinarizer
 from xgboost import XGBClassifier
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class VerbCounter(BaseEstimator, TransformerMixin):
+
+    def count_verb(self, text):
+        i = 0
+        pos_tags = nltk.pos_tag(tokenize(text))
+        for (word, tag) in pos_tags:
+            if tag in ['VB', 'VBP']:
+                i = i + 1
+        return i
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        X_tagged = pd.Series(X).apply(self.count_verb)
+        return pd.DataFrame(X_tagged)
 
 
 def load_data(database_filepath):
@@ -56,6 +76,10 @@ def tokenize(text):
     Output:
     stemmed - the resulting tokens
     """
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
     text = re.sub(r'[^a-zA-Z0-9]', ' ', text.lower())
     words = word_tokenize(text)
     words = [word for word in words if word not in stopwords.words('english')]
@@ -80,20 +104,25 @@ def build_model():
     cv - GridSearchCV object (model)
     """
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(XGBCClassifier()))
+        ('features', FeatureUnion([
+            ('nlp', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+            ('verbcount', VerbCounter())
+        ])),
+        ('clf', MultiOutputClassifier(XGBClassifier()))
     ])
     
-    parameters = {
-        'vect__ngram_range': [(1,2), (2,2)],
-        'tfidf__smooth_idf': [True, False],
-        'clf__estimator__n_estimators': [50, 100, 200]
-    }
+#     parameters = {
+# #         'vect__ngram_range': [(1,2), (2,2)],
+#         'features__nlp__tfidf__smooth_idf': [True, False],
+#         'clf__estimator__n_estimators': [100, 200]
+#     }
 
-    cv = GridSearchCV(pipeline, parameters)
+#     cv = GridSearchCV(pipeline, parameters)
 
-    return cv
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -110,9 +139,18 @@ def evaluate_model(model, X_test, Y_test, category_names):
     Output:
     none
     """
+    y_true = Y_test.copy()
+    y_pred = model.predict(X_test)
+
+    m = MultiLabelBinarizer().fit(y_true)
+
+    f1_score(m.transform(y_true),
+             m.transform(y_pred),
+             average='weighted')
+    Y_pred = model.predict(X_test)
     for col in category_names:
         print(col)
-        print(classification_report(y_test[col], y_pred_df[col]))
+        print(classification_report(Y_test[col], Y_pred[col]))
 
 
 def save_model(model, model_filepath):
