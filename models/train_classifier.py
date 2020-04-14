@@ -110,19 +110,19 @@ def build_model():
             ])),
             ('verbcount', VerbCounter())
         ])),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))
     ])
     
-    parameters = {
-#         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
-        'features__nlp__tfidf__smooth_idf': [True, False],
-        'clf__estimator__n_estimators': [100, 200],
-        'clf__estimator__criterion': ['entropy']
-    }
+#    parameters = {
+##         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
+#        'features__nlp__tfidf__smooth_idf': [True, False],
+#        'clf__estimator__n_estimators': [100, 200],
+#        'clf__estimator__criterion': ['entropy']
+#    }
+#
+#    cv = GridSearchCV(pipeline, parameters)
 
-    cv = GridSearchCV(pipeline, parameters)
-
-    return cv
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -149,10 +149,10 @@ def evaluate_model(model, X_test, Y_test, category_names):
 #             average='weighted')
 #    print("overall f1 score: ", f1)
     
-    Y_pred = model.predict(X_test)
+    Y_pred = pd.DataFrame(model.predict(X_test), columns=category_names)
     for col in category_names:
         print(col)
-        print(classification_report(Y_test[col], Y_pred[col]))
+        print(classification_report(Y_test[:, col], Y_pred[:, col]))
 
 
 def save_model(model, model_filepath):
