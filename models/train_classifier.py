@@ -102,25 +102,26 @@ def build_model():
     Output:
     cv - GridSearchCV object (model)
     """
-    pipeline = Pipeline([
-        ('features', FeatureUnion([
-            ('nlp', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
-                ('tfidf', TfidfTransformer())
-            ])),
-            ('verbcount', VerbCounter())
-        ])),
-        ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))
-    ])
+   pipeline = Pipeline([
+       ('features', FeatureUnion([
+           ('nlp', Pipeline([
+               ('vect', CountVectorizer(tokenizer=tokenize)),
+               ('tfidf', TfidfTransformer())
+           ])),
+           ('verbcount', VerbCounter())
+       ])),
+       ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))
+   ])
+
     
-#    parameters = {
-##         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
-#        'features__nlp__tfidf__smooth_idf': [True, False],
-#        'clf__estimator__n_estimators': [100, 200],
-#        'clf__estimator__criterion': ['entropy']
-#    }
-#
-#    cv = GridSearchCV(pipeline, parameters)
+   parameters = {
+#         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
+       'features__nlp__tfidf__smooth_idf': [True, False],
+       'clf__estimator__n_estimators': [100, 200],
+       'clf__estimator__criterion': ['entropy']
+   }
+
+   cv = GridSearchCV(pipeline, parameters)
 
     return pipeline
 
@@ -138,21 +139,11 @@ def evaluate_model(model, X_test, Y_test, category_names):
     
     Output:
     none
-    """
-#    y_true = Y_test.copy()
-#    y_pred = model.predict(X_test)
-#
-#    m = MultiLabelBinarizer().fit(y_true)
-#
-#    f1 = f1_score(m.transform(y_true),
-#             m.transform(y_pred),
-#             average='weighted')
-#    print("overall f1 score: ", f1)
-    
+    """ 
     Y_pred = pd.DataFrame(model.predict(X_test), columns=category_names)
     for col in category_names:
         print(col)
-        print(classification_report(Y_test[:, col], Y_pred[:, col]))
+        print(classification_report(Y_test[col], Y_pred[col]))
 
 
 def save_model(model, model_filepath):
