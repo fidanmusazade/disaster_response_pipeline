@@ -139,15 +139,15 @@ def evaluate_model(model, X_test, Y_test, category_names):
     Output:
     none
     """
-    y_true = Y_test.copy()
-    y_pred = model.predict(X_test)
-
-    m = MultiLabelBinarizer().fit(y_true)
-
-    f1 = f1_score(m.transform(y_true),
-             m.transform(y_pred),
-             average='weighted')
-    print("overall f1 score: ", f1)
+#    y_true = Y_test.copy()
+#    y_pred = model.predict(X_test)
+#
+#    m = MultiLabelBinarizer().fit(y_true)
+#
+#    f1 = f1_score(m.transform(y_true),
+#             m.transform(y_pred),
+#             average='weighted')
+#    print("overall f1 score: ", f1)
     
     Y_pred = model.predict(X_test)
     for col in category_names:
