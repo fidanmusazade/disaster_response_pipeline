@@ -23,7 +23,7 @@
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="https://www.udacity.com/">Made with Udacity</a></li>
-                <li><a href="https://github.com/">Contact</a></li>
+                <li><a href="https://github.com/fidanmusazade">Contact</a></li>
             </ul>
         </div>
     </div>
@@ -61,8 +61,15 @@
 
     {% for id in ids %}
         <div id="{{id}}"></div>
+        <div id="{{id}}"></div>
     {% endfor %}
+    
+    <div class="text-center w-125 p-3">
+        <img src="data:image/png;base64, {{ plot_url }}">
+    </div>
+
 </div>
+
 
 <script type="text/javascript">
     const graphs = {{graphJSON | safe}};
