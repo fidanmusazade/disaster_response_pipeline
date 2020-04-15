@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import re
 import pickle
+import joblib
 
 from sqlalchemy import create_engine
 
@@ -102,7 +103,7 @@ def build_model():
     Output:
     cv - GridSearchCV object (model)
     """
-   pipeline = Pipeline([
+    pipeline = Pipeline([
        ('features', FeatureUnion([
            ('nlp', Pipeline([
                ('vect', CountVectorizer(tokenizer=tokenize)),
@@ -111,17 +112,17 @@ def build_model():
            ('verbcount', VerbCounter())
        ])),
        ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))
-   ])
+    ])
 
     
-   parameters = {
+    parameters = {
 #         'features__nlp__vect__ngram_range': [(1,2), (2,2)],
        'features__nlp__tfidf__smooth_idf': [True, False],
        'clf__estimator__n_estimators': [100, 200],
        'clf__estimator__criterion': ['entropy']
-   }
+    }
 
-   cv = GridSearchCV(pipeline, parameters)
+    cv = GridSearchCV(pipeline, parameters)
 
     return pipeline
 
@@ -154,7 +155,7 @@ def save_model(model, model_filepath):
     model - the trained model to be exported
     model_filepath - the path to which to export the model
     """
-    pickle.dump(model, open(model_filepath, 'wb'))
+    joblib.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
