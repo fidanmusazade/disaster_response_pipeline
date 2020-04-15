@@ -1,0 +1,5 @@
+disaster/
+.DS_Store
+*.pkl
+*.db
+models/__pycache__/
