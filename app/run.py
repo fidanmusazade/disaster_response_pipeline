@@ -58,7 +58,7 @@ engine = create_engine('sqlite:///data/DisasterResponse.db')
 df = pd.read_sql_table('tweets', engine)
 
 # load model
-model = joblib.load("models/rf.pkl")
+model = joblib.load("models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
