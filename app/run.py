@@ -15,7 +15,8 @@ import base64
 
 from wordcloud import WordCloud
 from io import BytesIO
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 from sqlalchemy import create_engine
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -89,24 +90,6 @@ def index():
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
-        {
-            'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
-            ],
-
-            'layout': {
-                'title': 'Distribution of Message Genres',
-                'yaxis': {
-                    'title': "Count"
-                },
-                'xaxis': {
-                    'title': "Genre"
-                }
-            }
-        },
 
         {
             'data': [
@@ -125,7 +108,25 @@ def index():
                     'title': "Category"
                 }
             }
-        }
+        },
+        {
+            'data': [
+                Bar(
+                    x=genre_names,
+                    y=genre_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Genres',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre"
+                }
+            }
+        },
     ]
     
     # encode plotly graphs in JSON
