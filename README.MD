@@ -31,4 +31,4 @@ This project is a part of Udacity Data Scientist nanodegree and is aimed at clas
 The results can be observed by running app.py file
 
 ## Licensing, Authors, Acknowledgements
-All data is provided by Figure Eight. The project was completed with the help of Udacity.
+All data is provided by Figure Eight.
